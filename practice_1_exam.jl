@@ -49,6 +49,20 @@ end
 
 
 bubblesortperm(a) = bubblesortperm!(deepcopy(a))
+    
+# vibof в билете написал и sort! но в лекциях у него нет, а этот код я нашла в гитхабе джулии
+function sort!(v::AbstractVector, lo::Integer, hi::Integer, ::InsertionSortAlg, o::Ordering)
+    @inbounds for i = lo+1:hi
+        j = i
+        x = v[i]
+        while j > lo && lt(o, x, v[j-1])
+            v[j] = v[j-1]
+            j -= 1
+        end
+        v[j] = x
+    end
+    return v
+end
 
 # Дополнительно (это я стырила у челика, смысла здесь особо не вижу, но на всякий случай показываю)
 function bubblesort(A::Array{Int}, by = identity)
