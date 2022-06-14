@@ -1,6 +1,6 @@
 # ---------------- вопрос 1 ---------------------
-function bubblesort!(a) # если добавляется параметр by, то применяем функцию: if by(a[i]) > by(a[i+1]); значение по умолчанию by = identity
-    n = length(a)
+function bubblesort!(a) # если добавляется параметр by, то применяем функцию и получаем такую строчку:
+    n = length(a)  # if by(a[i]) > by(a[i+1]); значение по умолчанию by = identity
     for k in 1:n-1
         is_sorted = true
         for i in firstindex(a):lastindex(a)-k
@@ -50,8 +50,7 @@ end
 
 bubblesortperm(a) = bubblesortperm!(deepcopy(a))
 
-# Дополнительно
-
+# Дополнительно (это я стырила у челика, смысла здесь особо не вижу, но на всякий случай показываю)
 function bubblesort(A::Array{Int}, by = identity)
     X = deepcopy(A)
     for i in 1:size(A, 1)
@@ -103,7 +102,7 @@ end
 
 # ---------------------- 2 вопрос ------------------------------
 
-function my_findall(a)
+function findall(a)
     res = Vector{Int}(undef, size(a))
     res[begin] = firstindex(a)
     n = firstindex(res)
@@ -116,7 +115,7 @@ function my_findall(a)
     return resize!(res,n)
 end
 
-function my_findfirst(a)
+function findfirst(a)
     i_first = 0
     for i in firstindex(a) + 1 : lastindex(a)
         if a[i] && i_first == 0
@@ -126,7 +125,7 @@ function my_findfirst(a)
     return i_first
 end
 
-function my_findlast(a)
+function findlast(a)
     i_last = 0
     for i in firstindex(a) + 1 : lastindex(a)
         if a[i]
@@ -136,7 +135,7 @@ function my_findlast(a)
     return i_last
 end
 
-function my_filter(condition, a)
+function filter(condition, a)
     res = Vector{Int}(undef, size(a))
     res[begin] = firstindex(a)
     n = firstindex(res)
@@ -151,6 +150,7 @@ end
 
 
 # ---------------- 3 вопрос -------------------
+# реализация среза матрицы
 function slice(A::Matrix, I::Vectot{Int}, J::Vector{Int})
     B=Matrix{eltype(A)}(undef,length(I),length(J))
     for i in I
@@ -161,6 +161,9 @@ function slice(A::Matrix, I::Vectot{Int}, J::Vector{Int})
     return B
 end
 
+
+# сортировка пузырьком столбца матрицы (если просят сортировку строки, то нужно транспонировать матрицу)
+# и засунуть в этот баблсорт
 function bubblesort!(A::AbstractMatrix)
     for j in size(A,2)
         bubblesort!(@view A[:,j]) # - осуществляется сортировка j-го столбца с помощью ранее написанной функции
@@ -183,6 +186,51 @@ end
 
 bubblesortperm(A::AbstractMatrix{T}) where T <: Union{Real,Char,String} = bubblesortperm!(deepcopy(A))
 
-
+# сортировка матрицы по ключу
 sortkey!(A::AbstractMarix, key_values) = A[:, sortperm!(key_values)]
 sortkey!(A, sum(A, dim=1))
+
+# -------------------- 4 вопрос ----------------------
+#                                          СОРТИРОВКА ПОДСЧЕТОМ
+# В случае, если значения элементов сортируемого массива (A), являются элементами некоторого заранее 
+# известного относительно небольшого множества (values), то отсортировать такой массив можно за O(n) операций 
+# следующим образом. Будем считать, что множество значений values представлено одноименным отсортированным массивом 
+# или диапазоном (тут важно только, чтобы выполнялось условие values[i] < values[i+1]). 
+# остается только в мвссив a поместить значение values[1] подсчитанное число раз, затем - values[2], и т.д., и, наконец, - values[end].
+function calcsort!(a, values)
+    num_val = zeros(Int, size(values))
+    for v in a
+        num_val[indexvalue(v,values)] += 1
+    end
+    k=1
+    for i in eachindex(values)
+        for j in 1:num_val[i]
+            a[k] = values[i]
+            k+=1
+        end
+    end
+    return a
+end
+
+
+# Здесь вспомогательная функция indexvalue(v, values) возвращает индекс значения v в наборе значений values. 
+# Реализация этой функции зависит от способа представления набора значений values.
+
+indexvalue(v, values::UnionRange) = v - values[1] + 1 # если values - это диапазон целых чисел
+indexvalue(v, values::Vector) = findfirst(v, values) # values - это отсортированный вектор значений
+
+# Если массив А является целочисленным, то множество всехвозможных значений элементов этого массива содержится 
+# в диапазоне minimum(A):maximum(A). Поэтому функция, реализующая сортировку целочисленного массива методом подсчета
+# (что возможно, если только этот диапазон не является чрезмерно большим) может не иметь второго параметра.
+function calcsort!(A::Vector{<:Integer})
+    min_val, max_val = extrema(A)
+    num_val = zeros(Int, max_val-min_val+1) # если не указать здесь тип Int, то в дальнейшем это привело бы к ошибке (индексы должны быть целыми)
+    for val in A
+        num_val[val-min_val+1] += 1
+    end  
+    k = 0
+    for (i, num) in enumerate(num_val)
+        A[k+1:k+num] = min_val+i-1
+        k += num
+    end
+end
