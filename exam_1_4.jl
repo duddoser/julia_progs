@@ -1,4 +1,5 @@
 # ---------------- вопрос 1 ---------------------
+#Сортирвка пузырьком. issorted, sortperm!, sort!. Сортирвка по значению функции.
 function bubblesort!(a) # если добавляется параметр by, то применяем функцию и получаем такую строчку:
     n = length(a)  # if by(a[i]) > by(a[i+1]); значение по умолчанию by = identity
     for k in 1:n-1
@@ -115,6 +116,7 @@ function bubblesortperm!(A::Array{Int}, B::Array{Int}, by = identity)
 end
 
 # ---------------------- 2 вопрос ------------------------------
+#findall, findfirst, findlast, filter
 
 function findall(a)
     res = Vector{Int}(undef, size(a))
@@ -164,6 +166,8 @@ end
 
 
 # ---------------- 3 вопрос -------------------
+#Сортирвка столбцов матрицы по ключу. Срезы
+
 # реализация среза матрицы
 function slice(A::Matrix, I::Vectot{Int}, J::Vector{Int})
     B=Matrix{eltype(A)}(undef,length(I),length(J))
