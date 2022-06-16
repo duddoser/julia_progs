@@ -171,10 +171,10 @@ end
 #Сортирвка столбцов матрицы по ключу. Срезы
 
 # реализация среза матрицы
-function slice(A::Matrix, I::Vectot{Int}, J::Vector{Int})
+function slice(A::Matrix, I::Vector{Int}, J::Vector{Int})
     B=Matrix{eltype(A)}(undef,length(I),length(J))
-    for i in I
-        for j in J
+    for i in eachindex(I)
+        for j in eachindex(J)
             B[i,j]=A[I[i],J[j]]
         end
     end
@@ -182,9 +182,9 @@ function slice(A::Matrix, I::Vectot{Int}, J::Vector{Int})
 end
 
 
-# сортировка пузырьком столбца матрицы (если просят сортировку строки, то нужно транспонировать матрицу)
-# и засунуть в этот баблсорт
-function bubblesort!(A::AbstractMatrix)
+# сортировка пузырьком столбца матрицы (если просят сортировку строки, то нужно транспонировать матрицу с помощью функции transpose())
+# и засунуть в этот баблсорт, у джулии какие-то беды если сортировать по строке
+function bubblesort!(A::AbstractMatrix{T}) where T <: Union{Real,Char,String}
     for j in size(A,2)
         bubblesort!(@view A[:,j]) # - осуществляется сортировка j-го столбца с помощью ранее написанной функции
     end
@@ -206,9 +206,9 @@ end
 
 bubblesortperm(A::AbstractMatrix{T}) where T <: Union{Real,Char,String} = bubblesortperm!(deepcopy(A))
 
-# сортировка матрицы по ключу
-sortkey!(A::AbstractMarix, key_values) = A[:, sortperm!(key_values)]
-sortkey!(A, sum(A, dim=1))
+# сортировка столбцов матрицы по ключу (ключ - это функция)
+sortkey!(A::AbstractMatrix{T}, key_values) where T <: Union{Int, Float64} = A[:, sortperm(key_values[1,:])]
+sortkey!(b, sum(b, dims=1))
 
 # -------------------- 4 вопрос ----------------------
 #                                          СОРТИРОВКА ПОДСЧЕТОМ
@@ -216,7 +216,7 @@ sortkey!(A, sum(A, dim=1))
 # известного относительно небольшого множества (values), то отсортировать такой массив можно за O(n) операций 
 # следующим образом. Будем считать, что множество значений values представлено одноименным отсортированным массивом 
 # или диапазоном (тут важно только, чтобы выполнялось условие values[i] < values[i+1]). 
-# остается только в мвссив a поместить значение values[1] подсчитанное число раз, затем - values[2], и т.д., и, наконец, - values[end].
+# остается только в массив a поместить значение values[1] подсчитанное число раз, затем - values[2], и т.д., и, наконец, - values[end].
 function calcsort!(a, values)
     num_val = zeros(Int, size(values))
     for v in a
@@ -237,7 +237,7 @@ end
 # Реализация этой функции зависит от способа представления набора значений values.
 
 indexvalue(v, values::UnionRange) = v - values[1] + 1 # если values - это диапазон целых чисел
-indexvalue(v, values::Vector) = findfirst(v, values) # values - это отсортированный вектор значений
+indexvalue(v, values::Vector) = findfirst(x -> x == v, values) # values - это отсортированный вектор значений
 
 # Если массив А является целочисленным, то множество всехвозможных значений элементов этого массива содержится 
 # в диапазоне minimum(A):maximum(A). Поэтому функция, реализующая сортировку целочисленного массива методом подсчета
@@ -248,9 +248,13 @@ function calcsort!(A::Vector{<:Integer})
     for val in A
         num_val[val-min_val+1] += 1
     end  
-    k = 0
+
+    k = 1
     for (i, num) in enumerate(num_val)
-        A[k+1:k+num] = min_val+i-1
-        k += num
+        for j in 1:num
+            A[k] = i
+            k += 1
+        end
     end
+    return A
 end
