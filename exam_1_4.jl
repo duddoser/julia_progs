@@ -123,18 +123,18 @@ function findall(a)
     res = Vector{Int}(undef, size(a))
     res[begin] = firstindex(a)
     n = firstindex(res)
-    for i in firstindex(a) + 1 : lastindex(a)
+    for i in firstindex(a) : lastindex(a)
         if a[i]
-            n += 1
             res[n] = i
+            n += 1
         end
     end
-    return resize!(res,n)
+    return resize!(res, n - 1)
 end
 
 function findfirst(a)
     i_first = 0
-    for i in firstindex(a) + 1 : lastindex(a)
+    for i in firstindex(a) : lastindex(a)
         if a[i] && i_first == 0
             i_first = i
         end
@@ -144,7 +144,7 @@ end
 
 function findlast(a)
     i_last = 0
-    for i in firstindex(a) + 1 : lastindex(a)
+    for i in firstindex(a) : lastindex(a)
         if a[i]
             i_last = i
         end
@@ -156,7 +156,7 @@ function filter(condition, a)
     res = Vector{Int}(undef, size(a))
     res[begin] = firstindex(a)
     n = firstindex(res)
-    for i in firstindex(a) + 1 : lastindex(a)
+    for i in firstindex(a) : lastindex(a)
         if condition(a[i])
             n += 1
             res[n] = a[i]
