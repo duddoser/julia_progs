@@ -39,22 +39,20 @@ end
 Сортировка вставками
 
 ```julia
-function swap!(array, i, j)
-    temp = array[i]
-    array[i] = array[j]
-    array[j] = temp
-end
-
-
-function insertionSort!(array::AbstractVector)
-    for i in 2:length(array)
-        for j in i-1:-1:1
-            if array[i] < array[j]
-                swap!(array, i, j)
-            end
-        end
+function insertsort!(A)
+    n=length(A)
+    for k in eachindex(A) #2:n
+        # часть массива A[1:k-1] уже отсортирована
+        op_insert!(A,k)
     end
+    return A
 end
+
+op_insert!(A,k) =
+    while k>1 && A[k-1] > A[k]
+        A[k-1], A[k] = A[k], A[k-1]
+        k -= 1
+    end
 ```
 
 # Билет 8
@@ -64,7 +62,7 @@ end
 
 ```julia
 function _circshift!(a, k)
-    k = length(a) % k
+    k = k % length(a)
     if k > 0
         reverse!(@view(a[begin:k]))
         reverse!(@view(a[k+1:end]))
@@ -87,7 +85,7 @@ function _isperm(p)
     n = length(p)
     used = falses(n) # возвращает нулевой BitVector длины n
     for i in p
-        (i in 1:n) && (used[i] ⊻= true) || return false # значек ⊻ - обозначает "исключающее или" 
+        (i in 1:n) && (used[i] != true) || return false # у вибофа был знак не "!=", а "⊻=", смысла особого в нем не вижу (значок ⊻ - обозначает "исключающее или") 
     end
     true
 end
@@ -135,6 +133,31 @@ function _permute!(A, p)
         p[i] = -p[i]
     end        
     return A
+end
+```
+На всякий случай еще добавлю, это вариант Феди
+```julia
+function permute_!(A::AbstractVector, perm::AbstractVector{<:Integer})
+    first = 1
+    itr_up = first
+    temp_1 = A[first]
+    itr_low = perm[itr_up]
+    while any(x > 0 for x in perm)
+        while itr_low != first
+            itr_low = perm[itr_up]
+            temp_2 = A[itr_low]
+            A[itr_low] = temp_1
+            temp_1 = temp_2
+            perm[itr_up] = -perm[itr_up]
+            itr_up = itr_low
+        end
+        for i in perm
+            if i > 0
+                first = i
+                break
+            end
+        end
+    end
 end
 ```
 
