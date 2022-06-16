@@ -51,7 +51,8 @@ end
 
 bubblesortperm(a) = bubblesortperm!(deepcopy(a))
     
-# vibof в билете написал и sort! но в лекциях у него нет, а этот код я нашла в гитхабе джулии
+# vibof в билете написал и sort! но в лекциях у него нет, а этот код я нашла в гитхабе джулии; это конкретно если параметр InsertionSortAlg
+# и смысл вопроса, наверное, в том, что надо сказать, что эта функция принимает как параметр разные алгоритмы сортировки 
 function sort!(v::AbstractVector, lo::Integer, hi::Integer, ::InsertionSortAlg, o::Ordering)
     @inbounds for i = lo+1:hi
         j = i
